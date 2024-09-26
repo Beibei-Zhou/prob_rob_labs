@@ -6,6 +6,11 @@
   <arg name="run_door_opener" default="false" />
   <arg name="run_image_viewer" default="false" />
   <arg name="run_vision_processor" default="false" />
+  <arg name="x" default="-1.5" />
+  <arg name="y" default="0" />
+  <arg name="z" default="0.05" />
+  <arg name="yaw" default="0" />
+
 
   <!-- Configuration of Jackal which you would like to simulate.
        See jackal_description for details. -->
@@ -21,10 +26,10 @@
 
   <!-- Spawn Jackal -->
   <include file="$(find jackal_gazebo)/launch/spawn_jackal.launch">
-    <arg name="x" value="-1.5" />
-    <arg name="y" value="0" />
-    <arg name="z" value="0.05" />
-    <arg name="yaw" value="0" />
+    <arg name="x" value="$(arg x)" />
+    <arg name="y" value="$(arg y)" />
+    <arg name="z" value="$(arg z)" />
+    <arg name="yaw" value="$(arg yaw)" />
     <arg name="config" value="$(arg config)" />
     <arg name="joystick" value="false" />
   </include>
