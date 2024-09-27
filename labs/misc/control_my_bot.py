@@ -10,7 +10,7 @@ def talker():
         motion = Twist()
         motion.linear.x = 1
         motion.angular.z = 0.5
-        hello_str = "hello world %s" % rospy.get_time()
+        #hello_str = "hello world %s" % rospy.get_time()
         #rospy.loginfo(hello_str)
         pub.publish(motion)
         rate.sleep()
