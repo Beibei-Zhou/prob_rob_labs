@@ -9,7 +9,7 @@ def read(fname):
 
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
-    packages=['image_mean_feature_x', 'flaky_door_opener'],
+    packages=['image_mean_feature_x', 'flaky_door_opener', 'door_control_node'],
     package_dir={'': 'src'},
     platforms=['ROS'],
     long_description="Python nodes for Probabilistic Robotics lab"
