@@ -65,7 +65,7 @@ class RobotDoorController:
             return
         self.manipulate_door(-30.0)
         rospy.loginfo("Close the door...")
-        #rospy.loginfo(elapsed_time)
+        
         #rospy.loginfo(self.start_time)
  
     def manipulate_door(self, t):
