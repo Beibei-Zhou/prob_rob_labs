@@ -34,7 +34,7 @@ class RobotDoorController:
         
         rospy.loginfo("RobotDoorController initialized.")
         # Read the robot speed parameter with a default value of 0.0
-        self.robot_speed = rospy.get_param('~robot_speed', 2.0)
+        self.robot_speed = rospy.get_param('~robot_speed',1.5)
         rospy.loginfo("RobotController initialized with robot speed:{}".format(self.robot_speed))
         
     def control_loop(self, _):
@@ -47,8 +47,8 @@ class RobotDoorController:
             self.start_time = now
             return
         elapsed_time = now - self.start_time
-        rospy.loginfo('now is {}, elapsed time is {}'.format(now, elapsed_time))
-        if elapsed_time < 6:
+        #rospy.loginfo('now is {}, elapsed time is {}'.format(now, elapsed_time))
+        if elapsed_time < 3:
             # First 5 seconds: Open the door
             self.manipulate_door(30.0)
             rospy.loginfo("Opening the door...")
@@ -59,25 +59,27 @@ class RobotDoorController:
             self.move_robot()
             rospy.loginfo("Move the robot...")
             return
-        if elapsed_time < 14:
+        if elapsed_time < 12:
             self.stop_robot()
             rospy.loginfo("Stop the robot...")
             return
-        self.manipulate_door(-5.0)
-        #rospy.loginfo("Close the door...")
+        self.manipulate_door(-30.0)
+        rospy.loginfo("Close the door...")
         #rospy.loginfo(elapsed_time)
         #rospy.loginfo(self.start_time)
  
     def manipulate_door(self, t):
         # Apply negative torque to close the door
         torque_msg = Float64()
-        torque_msg.data = t  # Adjust as needed
+        torque_msg.data = t  # Adjust as neededx
         self.door_pub.publish(torque_msg)
 
     def move_robot(self):
         # Move the robot forward
         twist_msg = Twist()
-        twist_msg.linear.x = self.robot_speed  # Adjust speed as needed
+        # Adjust speed as needed
+        twist_msg.linear.x = self.robot_speed
+        
         self.cmd_vel_pub.publish(twist_msg)
 
     def stop_robot(self):

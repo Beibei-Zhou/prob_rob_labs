@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Define an argument for robot_speed with a default value -->
-  <arg name="robot_speed" default="2.0"/>
+  <arg name="robot_speed" default="1.5"/>
   
   <node pkg="prob_rob_labs" type="door_control_node" name="door_control_node" output="screen">
     <param name="robot_speed" value="$(arg robot_speed)"/>    
