@@ -18,6 +18,9 @@ install(DIRECTORY launch worlds
 
 
 
+catkin_install_python(PROGRAMS bin/find_thres_noise
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 catkin_install_python(PROGRAMS bin/door_control_node
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
