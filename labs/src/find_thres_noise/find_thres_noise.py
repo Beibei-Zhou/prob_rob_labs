@@ -12,8 +12,8 @@ class Probabilities_estimator:
         self.start_time = None
         self.rate = rospy.Rate(10)
         self.record = np.array([])
-        self.time_window = 120
-        self.threshold = 450
+        self.time_window = 1200
+        self.threshold = 460
         self.cnt = 0
 
     def feature_mean_callback(self,msg):
@@ -31,7 +31,8 @@ class Probabilities_estimator:
             rospy.loginfo('Done')
 
         rospy.loginfo("Number of the records:{}".format(len(self.record)))
-        rospy.loginfo("P(z=open|x=open)={}".format(self.cnt/len(self.record)))
+        rospy.loginfo("P(z=open|x=closed)={}".format(self.cnt/len(self.record)))
+        rospy.loginfo("P(z=closed|x=closed)={}".format(1 - (self.cnt/len(self.record))))
         #rospy.loginfo("feature_mean_callback with data:{}".format(msg.data))
 def main():
     rospy.init_node('find_thres_noise')

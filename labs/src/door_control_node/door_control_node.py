@@ -16,13 +16,23 @@ if __name__=='__main__':
 import rospy
 import time
 
-from std_msgs.msg import Float64, Float32
+from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 
 # Thresholds for detecting door status
-THRESHOLD_OPEN = 420.0
-THRESHOLD_CLOSED = 480.0
+#THRESHOLD_OPEN = 420.0
+#THRESHOLD_CLOSED = 480.0
+#MOVE_TIME = 4.0
+
+# Thresholds for feature_mean values
+MEASUREMENT_THRESHOLD = 460.0
+
+PRIOR_PROB_OPEN = 0.5
+PROB_FEATURE_GIVEN_OPEN = 0.99
+PROB_FEATURE_GIVEN_CLOSED=0.5
+DESIRED_PROB_OPEN = 0.99
 MOVE_TIME = 4.0
+
 
 class RobotDoorController:
     def __init__(self):
@@ -40,24 +50,35 @@ class RobotDoorController:
         self.state = 0
         self.start_time = None
         # rospy.loginfo('start time is {}'.format(self.start_time))
+        self.prob_open = PRIOR_PROB_OPEN # Initialize belief about the door being open
+        self.measurement_count = 0 # Count for the number of measurements taken
         self.rate = rospy.Rate(10)  # 10 Hz
         
         rospy.loginfo("RobotDoorController initialized.")
         # Read the robot speed parameter with a default value of 0.0
         self.robot_speed = rospy.get_param('~robot_speed',1.5)
         rospy.loginfo("RobotController initialized with robot speed:{}".format(self.robot_speed))
+        
     def feature_mean_callback(self, msg):
         self.feature_mean = msg.data
-        rospy.loginfo("feature_mean_callback called with data: {}".format(msg.data))
+        #rospy.loginfo("feature_mean_callback called with data: {}".format(msg.data))
     def control_loop(self, event):
         if self.state == 0:
-            self.manipulate_door(1.5)
+            self.manipulate_door(150.0)
             rospy.loginfo("Opening the door...")
+            if self.feature_mean is not None:
+                self.perform_bayesian_update()
+                if self.prob_open >= DESIRED_PROB_OPEN:
+                    rospy.loginfo("Probability door is open:{:.4f}".format(self.prob_open))
+                    rospy.loginfo("Door is open with high confidence. Proceeding to move the robot...")
+                    self.state = 1
+                    self.start_time = rospy.get_time()
+                    
             rospy.loginfo(self.feature_mean)
-            if self.feature_mean is not None and self.feature_mean < THRESHOLD_OPEN:
-                rospy.loginfo("Door is open. Proceeding to move the robot...")
-                self.state = 1
-                self.start_time = rospy.get_time()
+            #if self.feature_mean is not None and self.feature_mean < THRESHOLD_OPEN:
+                #rospy.loginfo("Door is open. Proceeding to move the robot...")
+                #self.state = 1
+                #self.start_time = rospy.get_time()
         elif self.state == 1:
             self.move_robot()
             rospy.loginfo("Moving the robot forward...")
@@ -70,9 +91,10 @@ class RobotDoorController:
         elif self.state == 2:
             self.manipulate_door(-30.0)
             rospy.loginfo("Closing the door")
-            if self.feature_mean is not None and self.feature_mean > THRESHOLD_CLOSED:
-                rospy.loginfo("Door is closed...")
-                self.state = 3
+            #if self.feature_mean is not None and self.feature_mean > THRESHOLD_CLOSED:
+                #rospy.loginfo("Door is closed...")
+                #self.state = 3
+            self.state = 3
         else:
             rospy.loginfo("Process completed.")
     def control_loop_time(self, _):
@@ -104,7 +126,22 @@ class RobotDoorController:
         self.manipulate_door(-30.0)
         rospy.loginfo("Close the door...")
 
- 
+    def perform_bayesian_update(self):
+        if self.feature_mean > MEASUREMENT_THRESHOLD:
+            measurement = 'high' # Indicative of closed door
+        else:
+            measurement = 'low' # Indicative of open door
+        P_measurement_given_open = PROB_FEATURE_GIVEN_OPEN if measurement == 'low' else 1 - PROB_FEATURE_GIVEN_OPEN
+        P_measurement_given_closed = PROB_FEATURE_GIVEN_CLOSED if measurement == 'low' else 1 - PROB_FEATURE_GIVEN_CLOSED
+
+        unnormalized_open = P_measurement_given_open * self.prob_open
+        unnormalized_closed = P_measurement_given_closed * (1 - self.prob_open)
+        #P_measurement = (P_measurement_given_open * self.prob_open) + (P_measurement_given_closed * (1 - self.prob_open))
+        P_measurement = unnormalized_open + unnormalized_closed
+        self.prob_open = unnormalized_open / P_measurement
+        self.measurement_count += 1
+        rospy.loginfo("Updated probability door is open: {:.4f}".format(self.prob_open))
+        rospy.loginfo("Number of measurements taken :{}".format(self.measurement_count))
     def manipulate_door(self, t):
         # Apply negative torque to close the door
         torque_msg = Float64()
@@ -134,6 +171,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
