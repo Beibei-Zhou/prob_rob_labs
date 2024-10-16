@@ -12,8 +12,8 @@ class Probabilities_estimator:
         self.start_time = None
         self.rate = rospy.Rate(10)
         self.record = np.array([])
-        self.time_window = 1200
-        self.threshold = 460
+        self.time_window = 120
+        self.threshold = 448
         self.cnt = 0
 
     def feature_mean_callback(self,msg):
