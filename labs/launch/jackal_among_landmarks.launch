@@ -4,6 +4,7 @@
   <arg name="gui" default="true" />
   <arg name="world_name" default="landmarks" />
   <arg name="run_image_viewer" default="false" />
+  <arg name="image" default="/front/left/image_raw"/>
   <arg name="run_vision" default="true" />
 
   <!-- Configuration of Jackal which you would like to simulate.
@@ -29,9 +30,9 @@
   </include>
 
   <group if="$(arg run_image_viewer)">
-    <node pkg="image_view" type="image_view" name="left_image_view">
-      <remap from="image" to="/front/left/image_raw"/>
-    </node>
+    <include file="$(find prob_rob_labs)/launch/image_viewer.launch">
+      <arg name="image" value="$(arg image)"/>
+    </include>
   </group>
 
   <group if="$(arg run_vision)">

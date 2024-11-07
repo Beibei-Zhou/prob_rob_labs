@@ -63,6 +63,11 @@
       <uri>model://magenta_landmark</uri>
       <pose>-11.5 -5 0.25 0 0 0</pose>
     </include>
+    <include>
+      <name>landmark_5</name>
+      <uri>model://cyan_landmark</uri>
+      <pose>0 0 0.25 0 0 0</pose>
+    </include>
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose>-6.71 3.52 4.23 0 0.45 -0.42</pose>

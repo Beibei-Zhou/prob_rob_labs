@@ -42,9 +42,20 @@
     <param name="h_limit_max" value="302"/>
     <param name="h_limit_min" value="298"/>
   </node>
+  <node pkg="nodelet" type="nodelet" name="hsv_cyan"
+        args="load opencv_apps/hsv_color_filter landmark_vision">
+    <remap from="image" to="front/left/image_raw"/>
+    <param name="h_limit_max" value="182"/>
+    <param name="h_limit_min" value="178"/>
+  </node>
   <node pkg="nodelet" type="nodelet" name="goodfeature_magenta"
         args="load opencv_apps/goodfeature_track landmark_vision">
     <remap from="image" to="hsv_magenta/image"/>
+    <param name="max_corners" value="4"/>
+  </node>
+  <node pkg="nodelet" type="nodelet" name="goodfeature_cyan"
+        args="load opencv_apps/goodfeature_track landmark_vision">
+    <remap from="image" to="hsv_cyan/image"/>
     <param name="max_corners" value="4"/>
   </node>
 </launch>

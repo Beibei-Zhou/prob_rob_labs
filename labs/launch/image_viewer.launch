@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="image" default="/front/left/image_raw"/>
+  <arg name="_node_name" default="$(eval image.replace('/', '_'))"/>
+  <arg name="_node_name_fixup" default="$(eval _node_name[1:] if _node_name.startswith('_') else _node_name)"/>
+  <node pkg="image_view" type="image_view" name="$(arg _node_name_fixup)_image_viewer">
+    <remap from="image" to="$(arg image)"/>
+  </node>
+</launch>
