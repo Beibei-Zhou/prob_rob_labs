@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+from measure_predictor import measure_predictor
+
+if __name__ == '__main__':
+    measure_predictor.main()
