@@ -4,6 +4,7 @@
 
 import rospy
 from geometry_msgs.msg import PoseStamped, PointStamped
+from opencv_apps.msg import Point2DArrayStamped, Point2D
 from sensor_msgs.msg import CameraInfo
 import tf2_ros
 import tf
@@ -152,7 +153,7 @@ class MeasurementPredictor:
         # Subscribers and Publishers
         self.camera_info_sub = rospy.Subscriber('/front/left/camera_info', CameraInfo, self.camera_info_callback)
         self.pose_sub = rospy.Subscriber('/jackal/ground_truth/pose', PoseStamped, self.ground_truth_pose_callback)
-        self.feature_pub = rospy.Publisher('/expected_features_' + self.landmark_color, PointStamped, queue_size=10)
+        self.feature_pub = rospy.Publisher('/expected_features_' + self.landmark_color, Point2DArrayStamped, queue_size=10)  # Modified publisher
 
         # TF Listener
         self.tf_buffer = tf2_ros.Buffer()
@@ -244,21 +245,22 @@ class MeasurementPredictor:
             rospy.loginfo('Landmark %s not in view', self.landmark_color)
             return
 
-        # Publish the features
-        header = Header()
-        header.stamp = rospy.Time.now()
-        header.frame_id = self.camera_frame_id  # Use the correct camera frame
+        # Publish the features as a Point2DArrayStamped
+        point_array_msg = Point2DArrayStamped()
+        point_array_msg.header.stamp = rospy.Time.now()
+        point_array_msg.header.frame_id = self.camera_frame_id  
 
+        # Create Point2D objects for each feature point
         for i in range(0, 8, 2):
             u = z_exp[i]
             v = z_exp[i+1]
-            point_msg = PointStamped()
-            point_msg.header = header
-            point_msg.point.x = u
-            point_msg.point.y = v
-            point_msg.point.z = 0.0  # Pixel coordinates, z=0
-            self.feature_pub.publish(point_msg)
+            point = Point2D()
+            point.x = u
+            point.y = v
+            point_array_msg.points.append(point)
 
+        # Publish the point array
+        self.feature_pub.publish(point_array_msg)
         rospy.loginfo('Published expected features for landmark %s', self.landmark_color)
 
     def run(self):
