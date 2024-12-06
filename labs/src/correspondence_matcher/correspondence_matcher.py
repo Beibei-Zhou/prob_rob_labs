@@ -4,7 +4,7 @@ from std_msgs.msg import Float32MultiArray
 import message_filters
 import numpy as np
 import csv
-import os  # Import os module
+import os
 
 class CorrespondenceMatcher:
     def __init__(self):
@@ -25,7 +25,7 @@ class CorrespondenceMatcher:
         self.ts = message_filters.ApproximateTimeSynchronizer(
             [self.predicted_sub, self.measured_sub],
             queue_size=10,
-            slop=0.1  # Reduced slop for better synchronization
+            slop=0.1
         )
         self.ts.registerCallback(self.callback)
 
@@ -33,7 +33,7 @@ class CorrespondenceMatcher:
         self.error_pub = rospy.Publisher('/feature_matching_error', Float32MultiArray, queue_size=10)
 
         # Dictionaries to store error data for each point
-        self.x_errors = {i: [] for i in range(4)}  # For points 0 to 3
+        self.x_errors = {i: [] for i in range(4)}  
         self.y_errors = {i: [] for i in range(4)}
 
         # Record the start time using ROS time
@@ -80,7 +80,7 @@ class CorrespondenceMatcher:
             return
 
         predicted_indices = np.arange(len(predicted_points))
-        predicted_features = np.array([[p.x, p.y] for p in predicted_points])  # Shape (4, 2)
+        predicted_features = np.array([[p.x, p.y] for p in predicted_points])
 
         # Extract measured features
         measured_points = measured_msg.points
@@ -89,7 +89,7 @@ class CorrespondenceMatcher:
             return
 
         measured_indices = np.arange(len(measured_points))
-        measured_features = np.array([[p.x, p.y] for p in measured_points])  # Shape (N, 2)
+        measured_features = np.array([[p.x, p.y] for p in measured_points])
 
         # Sort predicted features based on (x + y)
         pred_sort_keys = predicted_features[:, 0] + predicted_features[:, 1]
@@ -122,7 +122,7 @@ class CorrespondenceMatcher:
                 pred_point = predicted_features_sorted[idx]
                 meas_point = measured_features_sorted[idx]
 
-                orig_pred_idx = sorted_pred_order[idx] + 1  # +1 for 1-based indexing
+                orig_pred_idx = sorted_pred_order[idx] + 1
                 orig_meas_idx = sorted_meas_order[idx] + 1
 
                 x_diff = meas_point[0] - pred_point[0]
@@ -158,8 +158,10 @@ class CorrespondenceMatcher:
 
         # Publish the differences
         error_msg = Float32MultiArray()
-        error_msg.data = x_diffs + y_diffs  # Combine x and y diffs
+        error_msg.data = x_diffs + y_diffs
         self.error_pub.publish(error_msg)
+
+        self.calculate_variance()
 
     def calculate_variance(self):
         variances = {}
@@ -177,11 +179,12 @@ class CorrespondenceMatcher:
         return variances
 
     def run(self):
-        rate = rospy.Rate(1)  # 1 Hz
-        while not rospy.is_shutdown():
-            variances = self.calculate_variance()
-            rate.sleep()
-        rospy.loginfo('Shutting down correspondence_matcher')
+        rate = rospy.Rate(1)
+        rospy.spin()
+        # while not rospy.is_shutdown():
+        #     variances = self.calculate_variance()
+        #     rate.sleep()
+        #rospy.loginfo('Shutting down correspondence_matcher')
 
 def main():
     matcher = CorrespondenceMatcher()
