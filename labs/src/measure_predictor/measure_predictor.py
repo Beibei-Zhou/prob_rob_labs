@@ -147,7 +147,6 @@ class MeasurementPredictor:
         self.t_cx, self.t_cy, self.t_cz = 0.0, 0.0, 0.0
         self.f_x, self.f_y, self.c_x, self.c_y = 0.0, 0.0, 0.0, 0.0
 
-        # Measurement model instance
         self.measurement_model = MeasurementModel()
 
         # Subscribers and Publishers
@@ -158,6 +157,15 @@ class MeasurementPredictor:
         # TF Listener
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+
+        
+        # Fetch camera mount parameters once
+        # rospy.sleep(1.0) 
+        # self.camera_mount_parameters_fetched = self.get_camera_mount_parameters()
+
+        # if not self.camera_mount_parameters_fetched:
+        #     rospy.logerr('Failed to fetch camera mount parameters. Shutting down.')
+        #     rospy.signal_shutdown('TF Lookup Failure')
 
     def camera_info_callback(self, msg):
         self.camera_info = msg
@@ -179,8 +187,9 @@ class MeasurementPredictor:
             self.t_cx = trans.transform.translation.x
             self.t_cy = trans.transform.translation.y
             self.t_cz = trans.transform.translation.z
-            rospy.loginfo('Camera mount parameters: t_cx=%f, t_cy=%f, t_cz=%f', self.t_cx, self.t_cy, self.t_cz)
+            #rospy.loginfo('Camera mount parameters: t_cx=%f, t_cy=%f, t_cz=%f', self.t_cx, self.t_cy, self.t_cz)
             return True
+
         except tf2_ros.TransformException as e:
             rospy.logwarn('TF Exception: %s', str(e))
             return False
@@ -193,9 +202,16 @@ class MeasurementPredictor:
         if not self.get_camera_mount_parameters():
             return
 
+        # if not self.camera_mount_parameters_fetched:
+        #     rospy.logwarn('Camera mount parameters not fetched yet')
+        #     return
+        
         # Get robot pose
         x_r = msg.pose.position.x
+        #rospy.loginfo('Robot pose: x_r = %f', x_r)
         y_r = msg.pose.position.y
+        #rospy.loginfo('Robot pose: y_r = %f, x_r = %f', y_r, x_r)
+
 
         # Get robot orientation (theta_r)
         orientation_q = msg.pose.orientation
@@ -221,13 +237,13 @@ class MeasurementPredictor:
             self.t_cx, self.t_cy, self.t_cz,
             self.f_x, self.f_y, self.c_x, self.c_y
         )
-
+        rospy.loginfo('Point %d: u = %f, v = %f', 1, z_exp[0], z_exp[1])
         # Print the pixel coordinates of the four points
-        rospy.loginfo('Expected pixel coordinates (u,v):')
+        #rospy.loginfo('Expected pixel coordinates (u,v):')
         for i in range(0, 8, 2):
             u = z_exp[i]
             v = z_exp[i+1]
-            rospy.loginfo('Point %d: u = %f, v = %f', i//2 + 1, u, v)
+            #rospy.loginfo('Point %d: u = %f, v = %f', i//2 + 1, u, v)
 
         # Visibility Check
         img_width = self.camera_info.width
@@ -242,7 +258,7 @@ class MeasurementPredictor:
                 break
 
         if not in_view:
-            rospy.loginfo('Landmark %s not in view', self.landmark_color)
+            #rospy.loginfo('Landmark %s not in view', self.landmark_color)
             return
 
         # Publish the features as a Point2DArrayStamped
@@ -261,7 +277,7 @@ class MeasurementPredictor:
 
         # Publish the point array
         self.feature_pub.publish(point_array_msg)
-        rospy.loginfo('Published expected features for landmark %s', self.landmark_color)
+        #rospy.loginfo('Published expected features for landmark %s', self.landmark_color)
 
     def run(self):
         rospy.spin()

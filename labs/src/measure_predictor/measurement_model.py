@@ -116,3 +116,28 @@ class MeasurementModel:
 
     def compute_jacobian(self, *args):
         return self.jacobian_function(*args)
+
+A = MeasurementModel()
+
+t_cx, t_cy, t_cz = 0.0, 0.0, 0.0
+f_x, f_y, c_x, c_y = 0.1, 0.2, 0.3, 0.4
+x_r = -3.0
+
+y_r = -0.02
+
+
+theta_r = 0
+
+# Get landmark parameters
+x_l = 0
+y_l = 0
+h_l = 0.5
+r_l = 0.1
+z_exp = A.compute_measurement(
+            x_r, y_r, theta_r,
+            x_l, y_l, h_l, r_l,
+            t_cx, t_cy, t_cz,
+            f_x, f_y, c_x, c_y
+        )
+
+print(z_exp)
