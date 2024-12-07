@@ -175,8 +175,8 @@ class MeasurementPredictor:
         self.c_y = msg.K[5]
         self.camera_frame_id = msg.header.frame_id
         self.camera_info_received = True
-        rospy.loginfo('Camera info received from frame %s', self.camera_frame_id)
-        rospy.loginfo('Camera parameters: f_x = %f, f_y = %f, c_x=%f, c_y=%f', self.f_x, self.f_y, self.c_x, self.c_y)
+        #rospy.loginfo('Camera info received from frame %s', self.camera_frame_id)
+        #rospy.loginfo('Camera parameters: f_x = %f, f_y = %f, c_x=%f, c_y=%f', self.f_x, self.f_y, self.c_x, self.c_y)
 
     def get_camera_mount_parameters(self):
 
@@ -231,7 +231,7 @@ class MeasurementPredictor:
             self.t_cx, self.t_cy, self.t_cz,
             self.f_x, self.f_y, self.c_x, self.c_y
         )
-        #rospy.loginfo('Point %d: u = %f, v = %f', 1, z_exp[0], z_exp[1])
+        rospy.loginfo('Point %d: u = %f, v = %f', 1, z_exp[0], z_exp[1])
         # Print the pixel coordinates of the four points
         #rospy.loginfo('Expected pixel coordinates (u,v):')
         for i in range(0, 8, 2):
