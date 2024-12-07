@@ -12,8 +12,9 @@ class CorrespondenceMatcher:
         rospy.loginfo('Starting correspondence_matcher')
 
         # Parameters
-        self.landmark_color = rospy.get_param('~landmark_color', 'cyan')
-
+        # self.landmark_color = rospy.get_param('~landmark_color', 'cyan')
+        self.landmark_color = rospy.get_param('~landmark_color','cyan')
+        
         # Subscribers
         predicted_topic = '/expected_features_' + self.landmark_color
         measured_topic = '/goodfeature_' + self.landmark_color + '/corners'

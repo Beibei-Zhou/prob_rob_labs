@@ -18,6 +18,9 @@ install(DIRECTORY launch worlds
 
 
 
+catkin_install_python(PROGRAMS bin/measurement_model
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 catkin_install_python(PROGRAMS bin/correspondence_matcher
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
