@@ -18,6 +18,9 @@ class OdometryErrorNode:
         self.position_error_pub_ekf = rospy.Publisher('/position_error_ekf', Float64, queue_size=10)
         self.orientation_error_pub_ekf = rospy.Publisher('/orientation_error_ekf', Float64, queue_size=10)
 
+        self.position_error_pub_eif = rospy.Publisher('/position_error_eif', Float64, queue_size=10)
+        self.orientation_error_pub_eif = rospy.Publisher('/orientation_error_eif', Float64, queue_size=10)
+
         self.position_error_pub_raw = rospy.Publisher('/position_error_raw', Float64, queue_size=10)
         self.orientation_error_pub_raw = rospy.Publisher('/orientation_error_raw', Float64, queue_size=10)
 
@@ -29,6 +32,7 @@ class OdometryErrorNode:
         ground_truth_sub = Subscriber('/jackal/ground_truth/pose', PoseStamped)
 
         ekf_odom_sub = Subscriber('/ekf_odom', Odometry)
+        eif_odom_sub = Subscriber('/eif_odom', Odometry)
         raw_odom_sub = Subscriber('/jackal_velocity_controller/odom', Odometry)
         filtered_odom_sub = Subscriber('/odometry/filtered', Odometry)
 
@@ -39,6 +43,14 @@ class OdometryErrorNode:
             slop=0.1
         )
         self.ats_ekf.registerCallback(self.odometry_error_callback_ekf)
+
+        # Synchronize the messages for EIF odometry
+        self.ats_eif = ApproximateTimeSynchronizer(
+            [ground_truth_sub, eif_odom_sub],
+            queue_size=10,
+            slop=0.1
+        )
+        self.ats_eif.registerCallback(self.odometry_error_callback_eif)
 
         # Synchronize the messages for raw odometry
         self.ats_raw = ApproximateTimeSynchronizer(
@@ -57,6 +69,19 @@ class OdometryErrorNode:
         self.ats_filtered.registerCallback(self.odometry_error_callback_filtered)
 
         rospy.loginfo('Odometry Error Node Initialized')
+
+
+    def odometry_error_callback_eif(self, ground_truth_msg, odometry_msg):
+        position_error, orientation_error = self.compute_errors(ground_truth_msg, odometry_msg)
+
+        # Publish the errors
+        self.position_error_pub_eif.publish(position_error)
+        self.orientation_error_pub_eif.publish(orientation_error)
+
+        # Log the errors (optional)
+        rospy.loginfo('EIF Odometry - Position error: {:.4f} m, Orientation error: {:.4f} rad ({:.2f} degrees)'.format(
+            position_error, orientation_error, math.degrees(orientation_error)
+        ))
 
     def odometry_error_callback_ekf(self, ground_truth_msg, odometry_msg):
         position_error, orientation_error = self.compute_errors(ground_truth_msg, odometry_msg)
@@ -78,9 +103,9 @@ class OdometryErrorNode:
         self.orientation_error_pub_raw.publish(orientation_error)
 
         # Log the errors (optional)
-        rospy.loginfo('Raw Odometry - Position error: {:.4f} m, Orientation error: {:.4f} rad ({:.2f} degrees)'.format(
-            position_error, orientation_error, math.degrees(orientation_error)
-        ))
+        # rospy.loginfo('Raw Odometry - Position error: {:.4f} m, Orientation error: {:.4f} rad ({:.2f} degrees)'.format(
+        #     position_error, orientation_error, math.degrees(orientation_error)
+        # ))
 
     def odometry_error_callback_filtered(self, ground_truth_msg, odometry_msg):
         position_error, orientation_error = self.compute_errors(ground_truth_msg, odometry_msg)
@@ -90,9 +115,9 @@ class OdometryErrorNode:
         self.orientation_error_pub_filtered.publish(orientation_error)
 
         # Log the errors (optional)
-        rospy.loginfo('Filtered Odometry - Position error: {:.4f} m, Orientation error: {:.4f} rad ({:.2f} degrees)'.format(
-            position_error, orientation_error, math.degrees(orientation_error)
-        ))
+        # rospy.loginfo('Filtered Odometry - Position error: {:.4f} m, Orientation error: {:.4f} rad ({:.2f} degrees)'.format(
+        #     position_error, orientation_error, math.degrees(orientation_error)
+        # ))
 
     def compute_errors(self, ground_truth_msg, odometry_msg):
         # Extract positions

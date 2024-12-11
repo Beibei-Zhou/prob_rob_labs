@@ -46,7 +46,7 @@ class EKFOdometryNode:
         self.P = np.eye(5, dtype=np.float64) * 0.1  # Small initial uncertainty
 
         # Process noise covariance Q (5x5)
-        self.Q = np.diag(np.array([0.001, 0.001, 0.001, 0.005, 0.005], dtype=np.float64))
+        self.Q = np.diag(np.array([0.000, 0.000, 0.00, 0.005, 0.005], dtype=np.float64))
 
         # Measurement noise covariance R (5x5)
         encoder_var = (0.05) ** 2  
@@ -95,7 +95,7 @@ class EKFOdometryNode:
         self.u_v = msg.linear.x
         self.u_w = msg.angular.z
         self.last_cmd_time = rospy.Time.now()
-        rospy.loginfo(f"cmd_vel updated: u_v={self.u_v}, u_w={self.u_w}")
+        #rospy.loginfo(f"cmd_vel updated: u_v={self.u_v}, u_w={self.u_w}")
 
     def ekf_callback(self, imu_msg, joint_states_msg):
         if not self.bias_estimation_complete:
@@ -108,9 +108,9 @@ class EKFOdometryNode:
                 rospy.loginfo(f"Gyro bias estimated: {self.gyro_bias}")
                 self.gyro_bias_samples = []
             return
-        rospy.loginfo("ekf_callback triggered")
+        #rospy.loginfo("ekf_callback triggered")
         
-        rospy.loginfo(f"Using control inputs: u_v={self.u_v}, u_w={self.u_w}")
+        #rospy.loginfo(f"Using control inputs: u_v={self.u_v}, u_w={self.u_w}")
 
         
         current_time = imu_msg.header.stamp.to_sec()
@@ -134,19 +134,19 @@ class EKFOdometryNode:
 
         # State prediction (time update)
         self.predict_state(delta_t)
-        rospy.loginfo(f"Predicted state: {self.state}")
+        #rospy.loginfo(f"Predicted state: {self.state}")
 
         # Covariance prediction
         self.predict_covariance(delta_t)
-        rospy.loginfo("Covariance predicted.")
+        #rospy.loginfo("Covariance predicted.")
 
         # Measurement update (correction)
         self.update_state(imu_msg, joint_states_msg)
-        rospy.loginfo(f"Updated state: {self.state}")
+        rospy.loginfo(f"KF Updated state: {self.state}")
 
         # Publish the updated odometry message
         self.publish_odom(imu_msg.header.stamp)
-        rospy.loginfo("Odometry published.")
+        #rospy.loginfo("Odometry published.")
 
         # Publish covariance elements
         self.cov_x_pub.publish(self.P[0, 0])
@@ -192,10 +192,10 @@ class EKFOdometryNode:
             rospy.logwarn('Measurement vector z is None. Skipping update.')
             return
         C = np.array([
-            [0, 0, 0, 1 / self.r_w,  self.robot_radius / self.r_w],
+            [0, 0, 0, 1 / self.r_w, -self.robot_radius / self.r_w],
             [0, 0, 0, 1 / self.r_w,  self.robot_radius / self.r_w],
             [0, 0, 0, 1 / self.r_w, -self.robot_radius / self.r_w],
-            [0, 0, 0, 1 / self.r_w, -self.robot_radius / self.r_w],
+            [0, 0, 0, 1 / self.r_w,  self.robot_radius / self.r_w],
             [0, 0, 0, 0, 1.0]
         ], dtype=np.float64)
         z_pred = C @ self.state
@@ -210,7 +210,7 @@ class EKFOdometryNode:
 
         K = self.P @ C.T @ np.linalg.inv(S)
 
-        rospy.loginfo(f"Kalman gain K: {K}")
+        #rospy.loginfo(f"Kalman gain K: {K}")
 
         self.state = self.state + K @ y
 
@@ -219,7 +219,7 @@ class EKFOdometryNode:
 
     def get_measurement_vector(self, imu_msg, joint_states_msg):
         omega_g = imu_msg.angular_velocity.z - self.gyro_bias
-        rospy.loginfo(f"Gyro measurement omega_g: {omega_g}")
+        #rospy.loginfo(f"Gyro measurement omega_g: {omega_g}")
 
         if len(joint_states_msg.velocity) > 0:
             joint_velocities = dict(zip(joint_states_msg.name, joint_states_msg.velocity))
@@ -232,7 +232,7 @@ class EKFOdometryNode:
         omega_rl = joint_velocities.get('rear_left_wheel', 0.0)
         omega_rr = joint_velocities.get('rear_right_wheel', 0.0)
 
-        rospy.loginfo(f"Wheel velocities omega_fl: {omega_fl}, omega_fr: {omega_fr}, omega_rl: {omega_rl}, omega_rr: {omega_rr}")
+        #rospy.loginfo(f"Wheel velocities omega_fl: {omega_fl}, omega_fr: {omega_fr}, omega_rl: {omega_rl}, omega_rr: {omega_rr}")
 
         # Return the measurement vector
         return np.array([omega_fl, omega_fr, omega_rl, omega_rr, omega_g], dtype=np.float64)

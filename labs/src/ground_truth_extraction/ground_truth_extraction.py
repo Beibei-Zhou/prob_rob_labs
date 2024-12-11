@@ -28,7 +28,7 @@ class Ground_Truth:
         self.pose_stamp = PoseStamped(
             header=Header(
                 stamp=current,
-                frame_id='map'
+                frame_id='odom'
             ),
             pose=msg.pose[self.index]
         )
@@ -36,7 +36,7 @@ class Ground_Truth:
         self.twist_stamp = TwistStamped(
             header=Header(
                 stamp=current,
-                frame_id='map'
+                frame_id='odom'
             ),
             twist=msg.twist[self.index]
         )

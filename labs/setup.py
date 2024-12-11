@@ -9,7 +9,7 @@ def read(fname):
 
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
-    packages=['image_mean_feature_x', 'flaky_door_opener', 'door_control_node', 'find_thres_noise', 'ground_truth_extraction', 'ekf_odometry_node', 'odometry_error_node', 'measure_predictor', 'correspondence_matcher', 'measurement_model', 'ekf_localization', 'ekf_landmark_loc', 'ekf_error_node'],
+    packages=['image_mean_feature_x', 'flaky_door_opener', 'door_control_node', 'find_thres_noise', 'ground_truth_extraction', 'ekf_odometry_node', 'odometry_error_node', 'measure_predictor', 'correspondence_matcher', 'measurement_model', 'ekf_localization', 'ekf_landmark_loc', 'ekf_error_node', 'eif_odometry_node'],
     package_dir={'': 'src'},
     platforms=['ROS'],
     long_description="Python nodes for Probabilistic Robotics lab"

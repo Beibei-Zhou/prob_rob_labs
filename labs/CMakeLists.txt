@@ -18,6 +18,9 @@ install(DIRECTORY launch worlds
 
 
 
+catkin_install_python(PROGRAMS bin/eif_odometry_node
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 catkin_install_python(PROGRAMS bin/ekf_error_node
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

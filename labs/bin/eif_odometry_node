@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+from eif_odometry_node import eif_odometry_node
+
+if __name__ == '__main__':
+    eif_odometry_node.main()
