@@ -1,18 +1,5 @@
 #!/usr/bin/env python
 
-# import rospy
-
-
-# def main():
-#     rospy.init_node('ekf_odometry_node')
-#     rospy.loginfo('starting ekf_odometry_node')
-#     rospy.spin()
-#     rospy.loginfo('done')
-
-# if __name__=='__main__':
-#     main()
-
-
 import rospy
 import numpy as np
 from std_msgs.msg import Float64
